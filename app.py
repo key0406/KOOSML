@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 import joblib
-import numpy as np
 import os
+import xgboost as xgb  # Ensure XGBoost is imported
+import numpy as np
 
 app = Flask(__name__)
 
@@ -10,7 +11,7 @@ app = Flask(__name__)
 def home():
     return jsonify({"message": "KOOS Prediction API is running!"})
 
-# Load trained model at startup (ensure file exists)
+# Load trained model at startup
 model_path = os.getenv("MODEL_PATH", "KOOS_prediction_model.pkl")
 
 if not os.path.exists(model_path):
@@ -36,8 +37,11 @@ def predict():
             print("❌ ERROR: Features must be a list of numbers!")
             return jsonify({"error": "Invalid input format"}), 400
 
+        # Convert to XGBoost DMatrix before prediction
+        features_matrix = xgb.DMatrix(np.array(features).reshape(1, -1))  # Reshape for single sample
+
         # Predict using the preloaded model
-        prediction = model.predict([features])
+        prediction = model.predict(features_matrix)
         print("📊 Prediction:", prediction)  # Log prediction result
 
         return jsonify({"prediction": prediction.tolist()})
