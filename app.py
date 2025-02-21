@@ -17,7 +17,7 @@ print(f"✅ Loading model from {model_path}...")
 model = joblib.load(model_path)
 
 # Define expected feature columns
-EXPECTED_FEATURES = ["gap", "P1", "P2", "P3", "P4", "f1", "f2", "f3", "f4", "q1", "q2", "q3", "q4"]
+EXPECTED_FEATURES = ["P1", "P2", "P3", "P4", "f1", "f2", "f3", "f4", "q1", "q2", "q3", "q4", "Pain", "Function", "QOL"]
 
 @app.route('/predict', methods=['POST'])
 def predict():
