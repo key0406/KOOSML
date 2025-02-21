@@ -23,27 +23,22 @@ EXPECTED_FEATURES = ["P1", "P2", "P3", "P4", "f1", "f2", "f3", "f4", "q1", "q2",
 def predict():
     try:
         data = request.get_json()
-        print("📥 Received data:", data)
+        print("📥 Received data:", data)  # Debugging
 
-        if not data or "features" not in data:  # Corrected condition
+        if not data or "features" not in data:
             return jsonify({"error": "Invalid input format, 'features' missing"}), 400
 
-        # Convert input dictionary to Pandas DataFrame
-        df = pd.DataFrame([data["features"]])
+        df = pd.DataFrame([data["features"]])  
 
-        # Ensure feature order matches training data
         missing = list(set(EXPECTED_FEATURES) - set(df.columns))
         if missing:
             return jsonify({"error": f"Missing required features: {missing}"}), 400
 
-        # Convert to XGBoost DMatrix
         features_matrix = xgb.DMatrix(df[EXPECTED_FEATURES])
-
-        # Predict
         prediction = model.predict(features_matrix)
-        print("📊 Prediction:", prediction)
 
-        return jsonify({"prediction": prediction.tolist()})  # ✅ Return actual prediction
+        print("📊 Prediction:", prediction)
+        return jsonify({"prediction": prediction.tolist()})  # ✅ Ensure this is returned
 
     except Exception as e:
         print("🔥 ERROR:", e)
