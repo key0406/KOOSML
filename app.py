@@ -1,12 +1,18 @@
-
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
+import os
  
 app = Flask(__name__)
 
  # Load trained model (make sure you have 'model.pkl' saved)
-model = joblib.load("KOOS_prediction_model.pkl")
+model_path = os.getenv("MODEL_PATH", "KOOS_prediction_model.pkl")
+
+# モデルが存在するか確認してロード
+if not os.path.exists(model_path):
+    raise FileNotFoundError(f"Model file not found: {model_path}")
+
+model = joblib.load(model_path)
  
 @app.route('/predict', methods=['POST'])
 def predict():
