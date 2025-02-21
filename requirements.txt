@@ -2,4 +2,3 @@ flask
 numpy
 joblib
 gunicorn
-os
