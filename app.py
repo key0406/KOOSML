@@ -1,15 +1,11 @@
 from flask import Flask, request, jsonify
 import joblib
 import os
-import xgboost as xgb  # Ensure XGBoost is imported
+import xgboost as xgb
 import numpy as np
+import pandas as pd  # Required for feature alignment
 
 app = Flask(__name__)
-
-# Root route to check if API is running
-@app.route('/', methods=['GET'])
-def home():
-    return jsonify({"message": "KOOS Prediction API is running!"})
 
 # Load trained model at startup
 model_path = os.getenv("MODEL_PATH", "KOOS_prediction_model.pkl")
@@ -20,34 +16,37 @@ if not os.path.exists(model_path):
 print(f"✅ Loading model from {model_path}...")
 model = joblib.load(model_path)
 
+# Define expected feature columns
+EXPECTED_FEATURES = ["gap", "P1", "P2", "P3", "P4", "f1", "f2", "f3", "f4", "q1", "q2", "q3", "q4"]
+
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
         data = request.get_json()
-        print("📥 Received data:", data)  # Log received input
+        print("📥 Received data:", data)
 
         if not data or "features" not in data:
-            print("❌ ERROR: Missing 'features' in request!")
-            return jsonify({"error": "Invalid input"}), 400
+            return jsonify({"error": "Invalid input format, 'features' missing"}), 400
 
-        features = data["features"]
-        print("🧩 Extracted Features:", features)  # Log features
+        # Convert input dictionary to Pandas DataFrame
+        df = pd.DataFrame([data["features"]])  
 
-        if not isinstance(features, list) or not all(isinstance(x, (int, float)) for x in features):
-            print("❌ ERROR: Features must be a list of numbers!")
-            return jsonify({"error": "Invalid input format"}), 400
+        # Ensure feature order matches training data
+        if set(EXPECTED_FEATURES) - set(df.columns):
+            missing = list(set(EXPECTED_FEATURES) - set(df.columns))
+            return jsonify({"error": f"Missing required features: {missing}"}), 400
 
-        # Convert to XGBoost DMatrix before prediction
-        features_matrix = xgb.DMatrix(np.array(features).reshape(1, -1))  # Reshape for single sample
+        # Convert to XGBoost DMatrix
+        features_matrix = xgb.DMatrix(df[EXPECTED_FEATURES])
 
-        # Predict using the preloaded model
+        # Predict
         prediction = model.predict(features_matrix)
-        print("📊 Prediction:", prediction)  # Log prediction result
+        print("📊 Prediction:", prediction)
 
         return jsonify({"prediction": prediction.tolist()})
 
     except Exception as e:
-        print("🔥 ERROR:", e)  # Log any errors
+        print("🔥 ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
