@@ -1,4 +1,11 @@
 flask
 numpy
+pandas
+xgboost
+matplotlib
+seaborn
+optuna
+scikit-learn
+statistics
 joblib
 gunicorn
