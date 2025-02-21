@@ -25,6 +25,9 @@ def predict():
         data = request.get_json()
         print("📥 Received data:", data)
 
+        if data or "features":
+            return jsonify({"message": "Fetched Successfully"}),200
+
         if not data or "features" not in data:
             return jsonify({"error": "Invalid input format, 'features' missing"}), 400
 
