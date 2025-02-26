@@ -8,7 +8,7 @@ import pandas as pd  # Required for feature alignment
 app = Flask(__name__)
 
 # Load trained model at startup
-model_path = os.getenv("MODEL_PATH", "KOOS_prediction_model.pkl")
+model_path = os.getenv("MODEL_PATH", "KOOS_prediction_3500_model.pkl")
 
 if not os.path.exists(model_path):
     raise FileNotFoundError(f"Model file not found: {model_path}")
