@@ -4,6 +4,9 @@ import os
 import xgboost as xgb
 import numpy as np
 import pandas as pd  # Required for feature alignment
+import time
+import signal
+import sys
 
 app = Flask(__name__)
 
@@ -44,6 +47,17 @@ def predict():
         print("🔥 ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
+# Graceful shutdown handling
+def signal_handler(sig, frame):
+    print("🛑 Shutdown signal received. Cleaning up...")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False, threaded=True)
+
+    # Prevent auto-exit
+    while True:
+        time.sleep(1)
